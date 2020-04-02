@@ -163,6 +163,16 @@ public class AzureResourceConnector implements ResourceConnector<Map<String, Map
     }
 
     @Override
+    public void startDatabaseServer(AuthenticatedContext authenticatedContext, String dbInstanceIdentifier) {
+        throw new UnsupportedOperationException("Database server start operation is not supported for " + getClass().getName());
+    }
+
+    @Override
+    public void stopDatabaseServer(AuthenticatedContext authenticatedContext, String dbInstanceIdentifier) {
+        throw new UnsupportedOperationException("Database server stop operation is not supported for " + getClass().getName());
+    }
+
+    @Override
     public List<CloudResourceStatus> check(AuthenticatedContext authenticatedContext, List<CloudResource> resources) {
         List<CloudResourceStatus> result = new ArrayList<>();
         AzureClient client = authenticatedContext.getParameter(AzureClient.class);

@@ -1,6 +1,7 @@
 package com.sequenceiq.cloudbreak.cloud.mock;
 
 import static com.sequenceiq.cloudbreak.cloud.model.ResourceStatus.CREATED;
+import static java.util.Collections.emptyList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,22 +83,22 @@ public class MockResourceConnector implements ResourceConnector<Object> {
 
     @Override
     public List<CloudResourceStatus> check(AuthenticatedContext authenticatedContext, List<CloudResource> resources) {
-        return new ArrayList<>();
+        return emptyList();
     }
 
     @Override
     public List<CloudResourceStatus> terminate(AuthenticatedContext authenticatedContext, CloudStack stack, List<CloudResource> cloudResources) {
-        return new ArrayList<>();
+        return emptyList();
     }
 
     @Override
     public List<CloudResourceStatus> terminateDatabaseServer(AuthenticatedContext authenticatedContext, DatabaseStack stack, boolean force) {
-        return new ArrayList<>();
+        return emptyList();
     }
 
     @Override
     public List<CloudResourceStatus> update(AuthenticatedContext authenticatedContext, CloudStack stack, List<CloudResource> resources) {
-        return new ArrayList<>();
+        return emptyList();
     }
 
     @Override
@@ -144,7 +145,7 @@ public class MockResourceConnector implements ResourceConnector<Object> {
         } catch (UnirestException e) {
             throw new RuntimeException("rest error", e);
         }
-        return new ArrayList<>();
+        return emptyList();
     }
 
     @Override
@@ -161,5 +162,15 @@ public class MockResourceConnector implements ResourceConnector<Object> {
     public String getDBStackTemplate() throws TemplatingDoesNotSupportedException {
         //throw new TemplatingDoesNotSupportedException();
         return "BestDbStackTemplateInTheWorld";
+    }
+
+    @Override
+    public void startDatabaseServer(AuthenticatedContext authenticatedContext, String dbInstanceIdentifier) {
+        throw new UnsupportedOperationException("Database server start operation is not supported for " + getClass().getName());
+    }
+
+    @Override
+    public void stopDatabaseServer(AuthenticatedContext authenticatedContext, String dbInstanceIdentifier) {
+        throw new UnsupportedOperationException("Database server stop operation is not supported for " + getClass().getName());
     }
 }

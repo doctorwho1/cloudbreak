@@ -125,6 +125,16 @@ public class OpenStackResourceConnector implements ResourceConnector<Object> {
         throw new UnsupportedOperationException("Database server launch is not supported for " + getClass().getName());
     }
 
+    @Override
+    public void startDatabaseServer(AuthenticatedContext authenticatedContext, String dbInstanceIdentifier) {
+        throw new UnsupportedOperationException("Database server start operation is not supported for " + getClass().getName());
+    }
+
+    @Override
+    public void stopDatabaseServer(AuthenticatedContext authenticatedContext, String dbInstanceIdentifier) {
+        throw new UnsupportedOperationException("Database server stop operation is not supported for " + getClass().getName());
+    }
+
     private List<CloudResource> collectResources(AuthenticatedContext authenticatedContext, PersistenceNotifier notifier, Stack heatStack, CloudStack stack,
             NeutronNetworkView neutronNetworkView) {
         List<CloudResource> cloudResources = newArrayList();

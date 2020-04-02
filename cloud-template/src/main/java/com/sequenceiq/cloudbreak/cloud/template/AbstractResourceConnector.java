@@ -109,6 +109,16 @@ public abstract class AbstractResourceConnector implements ResourceConnector<Lis
     }
 
     @Override
+    public void startDatabaseServer(AuthenticatedContext authenticatedContext, String dbInstanceIdentifier) {
+        throw new UnsupportedOperationException("Database server termination is not supported for " + getClass().getName());
+    }
+
+    @Override
+    public void stopDatabaseServer(AuthenticatedContext authenticatedContext, String dbInstanceIdentifier) {
+        throw new UnsupportedOperationException("Database server termination is not supported for " + getClass().getName());
+    }
+
+    @Override
     public List<CloudResourceStatus> upscale(AuthenticatedContext auth, CloudStack stack, List<CloudResource> resources) {
         CloudContext cloudContext = auth.getCloudContext();
         Platform platform = cloudContext.getPlatform();

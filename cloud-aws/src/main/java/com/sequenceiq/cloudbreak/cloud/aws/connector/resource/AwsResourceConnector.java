@@ -79,6 +79,12 @@ public class AwsResourceConnector implements ResourceConnector<Object> {
     @Inject
     private AwsUpdateService awsUpdateService;
 
+    @Inject
+    private AwsRdsStartService awsRdsStartService;
+
+    @Inject
+    private AwsRdsStopService awsRdsStopService;
+
     @Override
     public List<CloudResourceStatus> launch(AuthenticatedContext ac, CloudStack stack, PersistenceNotifier resourceNotifier,
             AdjustmentType adjustmentType, Long threshold) throws Exception {
@@ -108,6 +114,16 @@ public class AwsResourceConnector implements ResourceConnector<Object> {
     @Override
     public List<CloudResourceStatus> terminateDatabaseServer(AuthenticatedContext ac, DatabaseStack stack, boolean force) throws Exception {
         return awsRdsTerminateService.terminate(ac, stack, force);
+    }
+
+    @Override
+    public void startDatabaseServer(AuthenticatedContext ac, String dbInstanceIdentifier) throws Exception {
+        awsRdsStartService.start(ac, dbInstanceIdentifier);
+    }
+
+    @Override
+    public void stopDatabaseServer(AuthenticatedContext ac, String dbInstanceIdentifier) throws Exception {
+        awsRdsStopService.stop(ac, dbInstanceIdentifier);
     }
 
     @Override

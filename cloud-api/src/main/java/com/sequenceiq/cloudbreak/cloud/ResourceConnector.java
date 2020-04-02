@@ -118,6 +118,24 @@ public interface ResourceConnector<R> {
     List<CloudResourceStatus> terminateDatabaseServer(AuthenticatedContext authenticatedContext, DatabaseStack stack, boolean force) throws Exception;
 
     /**
+     * Starts the database server. The caller does not need to wait/block until
+     * database server gets started.
+     * @param authenticatedContext the authenticated context which holds the client object
+     * @param dbInstanceIdentifier the server instance identifier
+     * @throws Exception in case of any error
+     */
+    void startDatabaseServer(AuthenticatedContext authenticatedContext, String dbInstanceIdentifier) throws Exception;
+
+    /**
+     * Stops the database server. The caller does not need to wait/block until
+     * database server gets stopped.
+     * @param authenticatedContext the authenticated context which holds the client object
+     * @param dbInstanceIdentifier the server instance identifier
+     * @throws Exception in case of any error
+     */
+    void stopDatabaseServer(AuthenticatedContext authenticatedContext, String dbInstanceIdentifier) throws Exception;
+
+    /**
      * Update of infrastructure on Cloud platform. (e.g change Security groups). It does not need to wait/block until the infrastructure update is
      * finished, but it can return immediately and the {@link #check(AuthenticatedContext, List)} method is invoked to check regularly whether the
      * infrastructure and all resources have already been updated or not.

@@ -229,6 +229,16 @@ public class YarnResourceConnector implements ResourceConnector<Object> {
     }
 
     @Override
+    public void startDatabaseServer(AuthenticatedContext authenticatedContext, String dbInstanceIdentifier) {
+        throw new UnsupportedOperationException("Database server start operation is not supported for " + getClass().getName());
+    }
+
+    @Override
+    public void stopDatabaseServer(AuthenticatedContext authenticatedContext, String dbInstanceIdentifier) {
+        throw new UnsupportedOperationException("Database server stop operation is not supported for " + getClass().getName());
+    }
+
+    @Override
     public List<CloudResourceStatus> update(AuthenticatedContext authenticatedContext, CloudStack stack, List<CloudResource> resources) {
         return null;
     }

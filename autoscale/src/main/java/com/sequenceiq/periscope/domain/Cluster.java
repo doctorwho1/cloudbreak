@@ -29,6 +29,12 @@ import com.sequenceiq.periscope.monitor.Monitored;
 @Entity
 public class Cluster implements Monitored, Clustered {
 
+    public static final int DEFAULT_HOSTGROUP_MIN_SIZE = 1;
+
+    public static final int DEFAULT_HOSTGROUP_MAX_SIZE = 50;
+
+    public static final int DEFAULT_HOSTGROUP_COOL_DOWN = 30;
+
     private static final int DEFAULT_MIN_SIZE = 2;
 
     private static final int DEFAULT_MAX_SIZE = 100;
@@ -53,7 +59,7 @@ public class Cluster implements Monitored, Clustered {
     @Enumerated(EnumType.STRING)
     private ClusterState state = ClusterState.PENDING;
 
-    @OneToMany(mappedBy = "cluster", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "cluster", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<MetricAlert> metricAlerts = new HashSet<>();
 
     @OneToMany(mappedBy = "cluster", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
@@ -62,7 +68,7 @@ public class Cluster implements Monitored, Clustered {
     @OneToMany(mappedBy = "cluster", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<LoadAlert> loadAlerts = new HashSet<>();
 
-    @OneToMany(mappedBy = "cluster", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "cluster", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<PrometheusAlert> prometheusAlerts = new HashSet<>();
 
     @Column(name = "min_size")
@@ -199,6 +205,14 @@ public class Cluster implements Monitored, Clustered {
 
     public Integer getMaxSize() {
         return maxSize;
+    }
+
+    public Integer getHostGroupMinSize() {
+        return DEFAULT_HOSTGROUP_MIN_SIZE;
+    }
+
+    public Integer getHostGroupMaxSize() {
+        return DEFAULT_HOSTGROUP_MAX_SIZE;
     }
 
     public void setMaxSize(Integer maxSize) {

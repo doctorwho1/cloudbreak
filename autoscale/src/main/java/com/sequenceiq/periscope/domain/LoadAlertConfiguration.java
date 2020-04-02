@@ -2,11 +2,11 @@ package com.sequenceiq.periscope.domain;
 
 public class LoadAlertConfiguration {
 
-    private Integer minResourceValue;
+    private Integer minResourceValue = Cluster.DEFAULT_HOSTGROUP_MIN_SIZE;
 
-    private Integer maxResourceValue;
+    private Integer maxResourceValue = Cluster.DEFAULT_HOSTGROUP_MAX_SIZE;
 
-    private Integer coolDownMinutes;
+    private Integer coolDownMinutes = Cluster.DEFAULT_HOSTGROUP_COOL_DOWN;
 
     public Integer getMinResourceValue() {
         return minResourceValue;

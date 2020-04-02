@@ -1,5 +1,7 @@
 package com.sequenceiq.periscope.domain;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.DiscriminatorValue;
@@ -7,6 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.Transient;
 
 import com.sequenceiq.periscope.converter.db.LoadAlertConfigAttributeConverter;
 
@@ -25,6 +28,9 @@ public class LoadAlert extends BaseAlert {
     @Column(name = "load_alert_config")
     private LoadAlertConfiguration loadAlertConfiguration;
 
+    @Transient
+    private List<String> decommissionNodeIds;
+
     @Override
     public Cluster getCluster() {
         return cluster;
@@ -40,5 +46,13 @@ public class LoadAlert extends BaseAlert {
 
     public void setLoadAlertConfiguration(LoadAlertConfiguration loadAlertConfiguration) {
         this.loadAlertConfiguration = loadAlertConfiguration;
+    }
+
+    public List<String> getDecommissionNodeIds() {
+        return decommissionNodeIds;
+    }
+
+    public void setDecommissionNodeIds(List<String> decommissionNodeIds) {
+        this.decommissionNodeIds = decommissionNodeIds;
     }
 }

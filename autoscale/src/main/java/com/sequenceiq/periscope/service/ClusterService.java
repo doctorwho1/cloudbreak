@@ -209,6 +209,15 @@ public class ClusterService {
         return clusterRepository.findByStateAndAutoscalingEnabledAndPeriscopeNodeId(state, autoscalingEnabled, nodeId);
     }
 
+    public List<Cluster> findClustersByClusterIds(List<Long> clusterIds) {
+        return clusterRepository.findClustersByClusterIds(clusterIds);
+    }
+
+    public List<Long> findLoadAlertClustersForNode(StackType stackType, ClusterState state,
+            boolean autoscalingEnabled, String nodeId) {
+        return clusterRepository.findByLoadAlertAndStackTypeAndClusterStateAndAutoscaling(stackType, state, autoscalingEnabled, nodeId);
+    }
+
     public void validateClusterUniqueness(MonitoredStack stack) {
         Iterable<Cluster> clusters = clusterRepository.findAll();
         boolean clusterForTheSameStackAndClusterManager = StreamSupport.stream(clusters.spliterator(), false)

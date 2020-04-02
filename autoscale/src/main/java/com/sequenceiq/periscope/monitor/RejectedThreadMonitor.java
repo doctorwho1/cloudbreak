@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import com.sequenceiq.cloudbreak.api.endpoint.v4.stacks.response.AutoscaleStackV4Response;
@@ -17,6 +18,7 @@ import com.sequenceiq.periscope.monitor.context.EvaluatorContext;
 import com.sequenceiq.periscope.monitor.evaluator.ClusterCreationEvaluator;
 
 @Component
+@ConditionalOnProperty(prefix = "periscope.enabledAutoscaleMonitors.rejected-thread-monitor", name = "enabled", havingValue = "true")
 public class RejectedThreadMonitor extends AbstractMonitor<RejectedThread> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RejectedThreadMonitor.class);

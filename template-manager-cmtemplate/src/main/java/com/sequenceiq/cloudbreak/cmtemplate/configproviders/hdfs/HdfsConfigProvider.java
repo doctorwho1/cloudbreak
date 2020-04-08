@@ -1,6 +1,7 @@
 package com.sequenceiq.cloudbreak.cmtemplate.configproviders.hdfs;
 
 import static com.sequenceiq.cloudbreak.cmtemplate.configproviders.ConfigUtils.config;
+import static com.sequenceiq.cloudbreak.cmtemplate.configproviders.hdfs.HdfsRoles.HDFS;
 
 import java.util.List;
 
@@ -26,6 +27,8 @@ public class HdfsConfigProvider implements CmTemplateComponentConfigProvider {
     public List<ApiClusterTemplateConfig> getServiceConfigs(CmTemplateProcessor templateProcessor, TemplatePreparationObject templatePreparationObject) {
         StringBuilder hdfsCoreSiteSafetyValveValue = new StringBuilder();
 
+        hdfsCoreSiteSafetyValveValue.append(templateProcessor.getServiceConfigValue(HDFS, CORE_SITE_SAFETY_VALVE));
+
         s3GuardConfigProvider.getServiceConfigs(templatePreparationObject, hdfsCoreSiteSafetyValveValue);
 
         return hdfsCoreSiteSafetyValveValue.toString().isEmpty() ? List.of()
@@ -34,7 +37,7 @@ public class HdfsConfigProvider implements CmTemplateComponentConfigProvider {
 
     @Override
     public String getServiceType() {
-        return HdfsRoles.HDFS;
+        return HDFS;
     }
 
     @Override

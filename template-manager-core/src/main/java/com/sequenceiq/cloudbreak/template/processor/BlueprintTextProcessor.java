@@ -43,6 +43,8 @@ public interface BlueprintTextProcessor {
 
     Set<String> getHostGroupsWithComponent(String component);
 
+    String getServiceConfigValue(String serviceType, String configName);
+
     String asText();
 
     Set<String> getComponentsInHostGroup(String name);

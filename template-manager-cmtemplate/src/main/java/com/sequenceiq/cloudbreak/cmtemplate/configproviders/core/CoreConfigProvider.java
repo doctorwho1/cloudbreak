@@ -52,6 +52,8 @@ public class CoreConfigProvider extends AbstractRoleConfigProvider {
                 .ifPresent(location -> apiClusterTemplateConfigs.add(config(CORE_DEFAULTFS, location.getValue())));
 
         StringBuilder hdfsCoreSiteSafetyValveValue = new StringBuilder();
+        hdfsCoreSiteSafetyValveValue.append(templateProcessor.getServiceConfigValue(HDFS, CORE_SITE_SAFETY_VALVE));
+
         s3GuardConfigProvider.getServiceConfigs(source, hdfsCoreSiteSafetyValveValue);
         if (!hdfsCoreSiteSafetyValveValue.toString().isEmpty()) {
             apiClusterTemplateConfigs.add(config(CORE_SITE_SAFETY_VALVE, hdfsCoreSiteSafetyValveValue.toString()));

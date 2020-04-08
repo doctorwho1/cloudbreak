@@ -113,6 +113,16 @@ public class CmTemplateProcessor implements BlueprintTextProcessor {
     }
 
     @Override
+    public String getServiceConfigValue(String serviceType, String configName) {
+        return getServiceByType(serviceType).flatMap(
+                service -> ofNullable(service.getServiceConfigs()).orElseGet(List::of).stream()
+                        .filter(config -> configName.equals(config.getName()))
+                        .findFirst()
+                        .map(ApiClusterTemplateConfig::getValue))
+                .orElse("");
+    }
+
+    @Override
     public String asText() {
         return cmTemplate.toString();
     }

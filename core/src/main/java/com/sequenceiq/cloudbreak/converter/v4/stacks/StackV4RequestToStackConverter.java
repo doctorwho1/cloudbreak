@@ -139,8 +139,9 @@ public class StackV4RequestToStackConverter extends AbstractConversionServiceAwa
         stack.setInstanceGroups(convertInstanceGroups(source, stack));
         measure(() -> updateCluster(source, stack, workspace),
                 LOGGER, "Converted cluster and updated the stack in {} ms for stack {}", source.getName());
-        stack.getComponents().add(getTelemetryComponent(stack, source));
-
+        if (!isTemplate(source)) {
+            stack.getComponents().add(getTelemetryComponent(stack, source));
+        }
         stack.setGatewayPort(source.getGatewayPort());
         stack.setUuid(UUID.randomUUID().toString());
         stack.setType(source.getType());

@@ -96,7 +96,8 @@ public class DistroXImagesTests extends AbstractE2ETest {
                 .when(distroXTestClient.create(), key(distrox))
                 .await(STACK_AVAILABLE)
                 .then((tc, testDto, client) -> {
-                    return waitUtil.waitForDistroxInstancesStatus(testDto, client, instancesHealthy);
+                    waitUtil.waitForDistroxInstanceStatus(testDto.getResponse().getName(), client, instancesHealthy);
+                    return testDto;
                 })
                 .then((tc, dto, client) -> {
                     Log.log(LOGGER, format(" Image Catalog Name: %s ", dto.getResponse().getImage().getCatalogName()));

@@ -35,7 +35,8 @@ public class InternalSdxTest extends PreconditionSdxE2ETest {
                 .awaitForFlow(key(resourcePropertyProvider().getName()))
                 .await(SdxClusterStatusResponse.RUNNING)
                 .then((tc, testDto, client) -> {
-                    return waitUtil.waitForSdxInstancesStatus(testDto, client, getSdxInstancesHealthyState());
+                    waitUtil.waitForSdxInstanceStatus(testDto.getResponse().getName(), client, getSdxInstancesHealthyState());
+                    return testDto;
                 })
                 .when(sdxTestClient.describeInternal())
                 .validate();

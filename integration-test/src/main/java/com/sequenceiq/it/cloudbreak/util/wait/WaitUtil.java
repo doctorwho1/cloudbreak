@@ -38,7 +38,6 @@ import com.sequenceiq.it.cloudbreak.FreeIPAClient;
 import com.sequenceiq.it.cloudbreak.RedbeamsClient;
 import com.sequenceiq.it.cloudbreak.SdxClient;
 import com.sequenceiq.it.cloudbreak.dto.CloudbreakTestDto;
-import com.sequenceiq.it.cloudbreak.dto.distrox.DistroXTestDto;
 import com.sequenceiq.it.cloudbreak.dto.sdx.SdxInternalTestDto;
 import com.sequenceiq.it.cloudbreak.dto.sdx.SdxTestDto;
 import com.sequenceiq.it.cloudbreak.exception.TestFailException;
@@ -405,40 +404,39 @@ public class WaitUtil {
         return errors;
     }
 
-    public SdxTestDto waitForSdxInstanceStatus(SdxTestDto sdxTestDto, SdxClient sdxClient, String hostGroup, InstanceStatus desiredState) {
-        String sdxName = sdxClient.getSdxClient().sdxEndpoint().get(sdxTestDto.getName()).getName();
-        waitForInstanceStatuses(sdxName, sdxClient, Map.of(hostGroup, desiredState));
-        return sdxTestDto;
-    }
-
-    public SdxInternalTestDto waitForSdxInstancesStatus(SdxInternalTestDto sdxTestDto, SdxClient sdxClient, Map<String, InstanceStatus> hostGroupsAndStates) {
-        String sdxName = sdxClient.getSdxClient().sdxEndpoint().get(sdxTestDto.getName()).getName();
-        waitForInstanceStatuses(sdxName, sdxClient, hostGroupsAndStates);
-        return sdxTestDto;
-    }
-
-    public SdxTestDto waitForSdxInstancesStatus(SdxTestDto sdxTestDto, SdxClient sdxClient, Map<String, InstanceStatus> hostGroupsAndStates) {
-        String sdxName = sdxClient.getSdxClient().sdxEndpoint().get(sdxTestDto.getName()).getName();
-        waitForInstanceStatuses(sdxName, sdxClient, hostGroupsAndStates);
-        return sdxTestDto;
-    }
-
-    public DistroXTestDto waitForDistroxInstancesStatus(DistroXTestDto distroXTestDto, CloudbreakClient cloudbreakClient, Map<String,
+    public void waitForDistroxInstanceStatus(String distroxName, CloudbreakClient cloudbreakClient, Map<String,
             InstanceStatus> hostGroupsAndStates) {
-        String distroxName = distroXTestDto.getRequest().getName();
-
         hostGroupsAndStates.forEach((hostGroup, desiredState) -> {
             int retryCount = 0;
             long startTime = System.currentTimeMillis();
-            while (retryCount < maxRetry && !checkDistroxInstanceState(cloudbreakClient, distroxName, hostGroup, desiredState)) {
+            List<InstanceGroupV4Response> instanceGroups = cloudbreakClient.getCloudbreakClient().distroXV1Endpoint().getByName(distroxName, Set.of())
+                    .getInstanceGroups();
+            while (retryCount < maxRetry && checkInstanceState(hostGroup, desiredState, instanceGroups)) {
                 LOGGER.info("Waiting for instance status {} in Host Group {} at {} DistroX, ellapsed {}ms", desiredState, hostGroup, distroxName,
                         System.currentTimeMillis() - startTime);
-                sleep(pollingInterval);
-                retryCount++;
+                StackV4Response distroxResponse = cloudbreakClient.getCloudbreakClient().distroXV1Endpoint().getByName(distroxName, Set.of());
+                if (distroxResponse != null) {
+                    String distroxStatus = distroxResponse.getStatus().name();
+                    if (containsIgnoreCase(distroxStatus, "FAILED")) {
+                        LOGGER.error(" Distrox {} is in {} state ", distroxName, distroxStatus);
+                        throw new TestFailException("Distrox " + distroxName + " is in " + distroxStatus + " state ");
+                    } else {
+                        sleep(pollingInterval);
+                        retryCount++;
+                    }
+                } else {
+                    LOGGER.error(" {} Distrox is not present ", distroxName);
+                    throw new TestFailException(distroxName + " Distrox is not present. ");
+                }
             }
 
-            if (checkDistroxInstanceState(cloudbreakClient, distroxName, hostGroup, desiredState)) {
-                Log.log(LOGGER, format(" [%s] host group instance state is [%s] at [%s] DostroX.", hostGroup, desiredState, distroxName));
+            if (retryCount < maxRetry) {
+                if (checkInstanceState(hostGroup, desiredState, instanceGroups)) {
+                    LOGGER.error(" {} instance group or its metadata cannot be found may it was deleted or missing ", hostGroup);
+                    throw new TestFailException(hostGroup + " instance group or its metadata cannot be found may it was deleted or missing. ");
+                } else {
+                    Log.log(LOGGER, format(" [%s] host group instance state is [%s] at [%s] DistroX", hostGroup, desiredState, distroxName));
+                }
             } else {
                 LOGGER.error("Timeout: Host Group: {} desired instance state: {} is NOT available at {} DostroX during {} retries", hostGroup, desiredState,
                         distroxName, maxRetry);
@@ -446,67 +444,48 @@ public class WaitUtil {
                         + " is NOT available at " + distroxName + " DostroX during " + maxRetry + " retries");
             }
         });
-
-        return distroXTestDto;
     }
 
-    private void waitForInstanceStatuses(String sdxName, SdxClient sdxClient, Map<String, InstanceStatus> hostGroupsAndStates) {
+    public void waitForSdxInstanceStatus(String sdxName, SdxClient sdxClient, Map<String, InstanceStatus> hostGroupsAndStates) {
         hostGroupsAndStates.forEach((hostGroup, desiredState) -> {
             int retryCount = 0;
             long startTime = System.currentTimeMillis();
-            while (retryCount < maxRetry && !checkSdxInstanceState(sdxClient, sdxName, hostGroup, desiredState)) {
+            List<InstanceGroupV4Response> instanceGroups = sdxClient.getSdxClient().sdxEndpoint().getDetail(sdxName, Set.of())
+                    .getStackV4Response()
+                    .getInstanceGroups();
+            while (retryCount < maxRetry && checkInstanceState(hostGroup, desiredState, instanceGroups)) {
                 LOGGER.info("Waiting for instance status {} in Host Group {} at {} SDX, ellapsed {}ms", desiredState, hostGroup, sdxName,
                         System.currentTimeMillis() - startTime);
-                sleep(pollingInterval);
-                retryCount++;
+                SdxClusterResponse sdxResponse = sdxClient.getSdxClient().sdxEndpoint().get(sdxName);
+                if (sdxResponse != null) {
+                    String sdxStatus = sdxResponse.getStatus().name();
+                    if (containsIgnoreCase(sdxStatus, "FAILED")) {
+                        LOGGER.error(" SDX {} is in {} state ", sdxName, sdxStatus);
+                        throw new TestFailException("SDX " + sdxName + " is in " + sdxStatus + " state ");
+                    } else {
+                        sleep(pollingInterval);
+                        retryCount++;
+                    }
+                } else {
+                    LOGGER.error(" {} SDX is not present ", sdxName);
+                    throw new TestFailException(sdxName + " SDX is not present ");
+                }
             }
 
-            if (checkSdxInstanceState(sdxClient, sdxName, hostGroup, desiredState)) {
-                Log.log(LOGGER, format(" [%s] host group instance state is [%s] at [%s] SDX.", hostGroup, desiredState, sdxName));
+            if (retryCount < maxRetry) {
+                if (checkInstanceState(hostGroup, desiredState, instanceGroups)) {
+                    LOGGER.error(" {} instance group or its metadata cannot be found may it was deleted or missing ", hostGroup);
+                    throw new TestFailException(hostGroup + " instance group or its metadata cannot be found may it was deleted or missing. ");
+                } else {
+                    Log.log(LOGGER, format(" [%s] host group instance state is [%s] at [%s] SDX", hostGroup, desiredState, sdxName));
+                }
             } else {
-                LOGGER.error("Timeout: Host Group: {} desired instance state: {} is NOT available at {} SDX during {} retries", hostGroup, desiredState,
+                LOGGER.error("Timeout: Host Group: {} desired instance state: {} is NOT available at {} during {} retries", hostGroup, desiredState,
                         sdxName, maxRetry);
                 throw new TestFailException(" Timeout: Host Group: " + hostGroup + " desired instance state: " + desiredState
-                        + " is NOT available at " + sdxName + " SDX during " + maxRetry + " retries");
+                        + " is NOT available at " + sdxName + " during " + maxRetry + " retries");
             }
         });
-    }
-
-    private boolean checkSdxInstanceState(SdxClient sdxClient, String sdxName, String hostGroup, InstanceStatus desiredState) {
-        List<InstanceGroupV4Response> instanceGroups = sdxClient.getSdxClient().sdxEndpoint().getDetail(sdxName, Set.of())
-                .getStackV4Response()
-                .getInstanceGroups();
-        SdxClusterResponse sdxResponse = sdxClient.getSdxClient().sdxEndpoint().get(sdxName);
-        if (sdxResponse != null) {
-            String sdxStatus = sdxResponse.getStatus().name();
-            if (containsIgnoreCase(sdxStatus, "FAILED")) {
-                LOGGER.error(" SDX is in {} state ", sdxStatus);
-                throw new TestFailException("SDX is in " + sdxStatus + " state. ");
-            } else {
-                return checkInstanceState(hostGroup, desiredState, instanceGroups);
-            }
-        } else {
-            LOGGER.error(" {} SDX is not present ", sdxName);
-            throw new TestFailException(sdxName + " SDX is not present. ");
-        }
-    }
-
-    private boolean checkDistroxInstanceState(CloudbreakClient cloudbreakClient, String distroxName, String hostGroup, InstanceStatus desiredState) {
-        List<InstanceGroupV4Response> instanceGroups = cloudbreakClient.getCloudbreakClient().distroXV1Endpoint().getByName(distroxName, Set.of())
-                .getInstanceGroups();
-        StackV4Response distroxResponse = cloudbreakClient.getCloudbreakClient().distroXV1Endpoint().getByName(distroxName, Set.of());
-        if (distroxResponse != null) {
-            String distroxStatus = distroxResponse.getStatus().name();
-            if (containsIgnoreCase(distroxStatus, "FAILED")) {
-                LOGGER.error(" Distrox is in {} state ", distroxStatus);
-                throw new TestFailException("Distrox is in " + distroxStatus + " state. ");
-            } else {
-                return checkInstanceState(hostGroup, desiredState, instanceGroups);
-            }
-        } else {
-            LOGGER.error(" {} Distrox is not present ", distroxName);
-            throw new TestFailException(distroxName + " Distrox is not present. ");
-        }
     }
 
     private boolean checkInstanceState(String hostGroup, InstanceStatus desiredState, List<InstanceGroupV4Response> instanceGroups) {
@@ -525,14 +504,14 @@ public class WaitUtil {
                         instanceMetaDataV4Response.getInstanceStatus(),
                         desiredState
                 );
-                return Objects.equals(instanceMetaDataV4Response.getInstanceStatus(), desiredState);
+                return !Objects.equals(instanceMetaDataV4Response.getInstanceStatus(), desiredState);
             } else {
                 LOGGER.error(" instance metadata is empty, may {} instance group was deleted. ", hostGroup);
-                throw new TestFailException("instance metadata is empty, may " + hostGroup + " instance group was deleted. ");
+                return false;
             }
         } else {
             LOGGER.error(" {} instance group is not present, may this was deleted. ", hostGroup);
-            throw new TestFailException(hostGroup + " instance group is not present, may this was deleted. ");
+            return false;
         }
     }
 
